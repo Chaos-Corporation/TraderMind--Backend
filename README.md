@@ -13,7 +13,7 @@ Welcome to the TraderMind Backend, the robust API powering the advanced trading 
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.12+
 - Uvicorn or any ASGI server
 
 ### Installation
