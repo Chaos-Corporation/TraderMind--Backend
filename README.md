@@ -58,7 +58,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-- **[Your Email](mailto:muhammad.sharjeel@chaoscorporated.com)**
+- **[Email](mailto:muhammad.sharjeel@chaoscorporated.com)**
 - **[Project Link](https://github.com/Chaos-Corporation/TraderMind--Backend)**
 
 Thank you for exploring the TraderMind Backend. Happy trading!
