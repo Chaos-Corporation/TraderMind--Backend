@@ -63,4 +63,3 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Thank you for exploring the TraderMind Backend. Happy trading!
 
-```
