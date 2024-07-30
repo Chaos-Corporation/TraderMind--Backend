@@ -17,3 +17,11 @@ class UserUpdatePasswordRequest(BaseRequest):
 class UserCreateRequest(BaseRequest):
     email: EmailStr
     password: str
+
+
+class CandlestickRequest(BaseModel):
+    symbol: str
+    target: str
+    pattern_type: str  # 'candlestick' or 'chart'
+    interval: str = "1d"
+    limit: int = 1000

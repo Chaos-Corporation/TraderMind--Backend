@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import mplfinance as mpf
-from neurotrader.TechnicalAnalysisAutomation.head_shoulders import find_hs_patterns, get_pattern_return
+from app.neurotrader.TechnicalAnalysisAutomation.head_shoulders import find_hs_patterns, get_pattern_return
     
 
 data = pd.read_csv('BTCUSDT3600.csv')

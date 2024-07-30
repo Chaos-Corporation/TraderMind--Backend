@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import mplfinance as mpf
-from neurotrader.TechnicalAnalysisAutomation.rolling_window import rw_top, rw_bottom
+from app.neurotrader.TechnicalAnalysisAutomation.rolling_window import rw_top, rw_bottom
 from typing import List
 from collections import deque
 from dataclasses import dataclass
@@ -69,7 +69,6 @@ def compute_pattern_r2(data: np.array, pat: HSPattern):
 
     r2 = 1.0 - ss_res / ss_tot
     return r2
-
 
 def check_hs_pattern(extrema_indices: List[int], data: np.array, i:int, early_find: bool = False) -> HSPattern:
     ''' Returns a HSPattern if found, or None if not found ''' 
@@ -174,7 +173,6 @@ def check_hs_pattern(extrema_indices: List[int], data: np.array, i:int, early_fi
 
     return pat
 
-
 def check_ihs_pattern(extrema_indices: List[int], data: np.array, i:int, early_find: bool = False) -> HSPattern:
     
     # Unpack list
@@ -275,7 +273,6 @@ def check_ihs_pattern(extrema_indices: List[int], data: np.array, i:int, early_f
 
     return pat
 
-
 def find_hs_patterns(data: np.array, order:int, early_find:bool = False):
     assert(order >= 1)
     
@@ -357,7 +354,6 @@ def find_hs_patterns(data: np.array, order:int, early_find:bool = False):
 
     return hs_patterns, ihs_patterns
 
-
 def get_pattern_return(data: np.array, pat: HSPattern, log_prices: bool = True) -> float:
 
     entry_price = pat.break_p
@@ -423,51 +419,71 @@ def plot_hs(candle_data: pd.DataFrame, pat: HSPattern, pad: int = 2):
     ax.text(x,y, f"BTC-USDT 1H ({idx[pat.start_i].strftime('%Y-%m-%d %H:%M')} - {idx[pat.break_i].strftime('%Y-%m-%d %H:%M')})", color='white', fontsize='xx-large')
     plt.show()
 
+
+def extract_hs_pattern_info(pat: HSPattern, data: pd.DataFrame):
+    return [
+        {'price': data['close'].iloc[pat.start_i], 'time': data.index[pat.start_i].timestamp()},
+        {'price': data['close'].iloc[pat.l_shoulder], 'time': data.index[pat.l_shoulder].timestamp()},
+        {'price': data['close'].iloc[pat.l_armpit], 'time': data.index[pat.l_armpit].timestamp()},
+        {'price': data['close'].iloc[pat.head], 'time': data.index[pat.head].timestamp()},
+        {'price': data['close'].iloc[pat.r_armpit], 'time': data.index[pat.r_armpit].timestamp()},
+        {'price': data['close'].iloc[pat.r_shoulder], 'time': data.index[pat.r_shoulder].timestamp()},
+        {'price': data['close'].iloc[pat.break_i], 'time': data.index[pat.break_i].timestamp()}
+    ]
+
 if __name__ == '__main__':
     data = pd.read_csv('BTCUSDT3600.csv')
     data['date'] = data['date'].astype('datetime64[s]')
     data = data.set_index('date')
 
-    data = np.log(data)
-    dat_slice = data['close'].to_numpy()
+    log_data = np.log(data['close'].to_numpy())
+    hs_patterns, ihs_patterns = find_hs_patterns(log_data, 6, early_find=False)
 
-    hs_patterns, ihs_patterns = find_hs_patterns(dat_slice, 6, early_find=False)
-   
-    hs_df = pd.DataFrame()
-    ihs_df = pd.DataFrame()
+    hs_info = [extract_hs_pattern_info(pat, data) for pat in hs_patterns]
+    ihs_info = [extract_hs_pattern_info(pat, data) for pat in ihs_patterns]
 
-    # Load pattern attributes into dataframe
-    for i, hs in enumerate(hs_patterns):
-        hs_df.loc[i, 'head_width'] = hs.head_width
-        hs_df.loc[i, 'head_height'] = hs.head_height
-        hs_df.loc[i, 'r2'] = hs.pattern_r2
-        hs_df.loc[i, 'neck_slope'] = hs.neck_slope
+    print("Head and Shoulders Patterns:")
+    for info in hs_info:
+        print(info)
+
+    print("Inverted Head and Shoulders Patterns:")
+    for info in ihs_info:
+        print(info)
+    # hs_df = pd.DataFrame()
+    # ihs_df = pd.DataFrame()
+
+    # # Load pattern attributes into dataframe
+    # for i, hs in enumerate(hs_patterns):
+    #     hs_df.loc[i, 'head_width'] = hs.head_width
+    #     hs_df.loc[i, 'head_height'] = hs.head_height
+    #     hs_df.loc[i, 'r2'] = hs.pattern_r2
+    #     hs_df.loc[i, 'neck_slope'] = hs.neck_slope
         
-        hp = int(hs.head_width)
-        if hs.break_i + hp >= len(data):
-            hs_df.loc[i, 'hold_return'] = np.nan
-        else:
-            ret = -1 * (dat_slice[hs.break_i + hp] - dat_slice[hs.break_i])
-            hs_df.loc[i, 'hold_return'] = ret 
+    #     hp = int(hs.head_width)
+    #     if hs.break_i + hp >= len(data):
+    #         hs_df.loc[i, 'hold_return'] = np.nan
+    #     else:
+    #         ret = -1 * (dat_slice[hs.break_i + hp] - dat_slice[hs.break_i])
+    #         hs_df.loc[i, 'hold_return'] = ret 
         
-        hs_df.loc[i, 'stop_return'] = get_pattern_return(dat_slice, hs) 
+    #     hs_df.loc[i, 'stop_return'] = get_pattern_return(dat_slice, hs) 
     
-    # Load pattern attributes into dataframe
-    for i, hs in enumerate(ihs_patterns):
-        ihs_df.loc[i, 'head_width'] = hs.head_width
-        ihs_df.loc[i, 'head_height'] = hs.head_height
-        ihs_df.loc[i, 'r2'] = hs.pattern_r2
-        ihs_df.loc[i, 'neck_slope'] = hs.neck_slope
+    # # Load pattern attributes into dataframe
+    # for i, hs in enumerate(ihs_patterns):
+    #     ihs_df.loc[i, 'head_width'] = hs.head_width
+    #     ihs_df.loc[i, 'head_height'] = hs.head_height
+    #     ihs_df.loc[i, 'r2'] = hs.pattern_r2
+    #     ihs_df.loc[i, 'neck_slope'] = hs.neck_slope
         
-        hp = int(hs.head_width)
-        if hs.break_i + hp >= len(data):
-            ihs_df.loc[i, 'hold_return'] = np.nan
-        else:
-            ret = dat_slice[hs.break_i + hp] - dat_slice[hs.break_i]
-            ihs_df.loc[i, 'hold_return'] = ret 
+    #     hp = int(hs.head_width)
+    #     if hs.break_i + hp >= len(data):
+    #         ihs_df.loc[i, 'hold_return'] = np.nan
+    #     else:
+    #         ret = dat_slice[hs.break_i + hp] - dat_slice[hs.break_i]
+    #         ihs_df.loc[i, 'hold_return'] = ret 
         
-        ihs_df.loc[i, 'stop_return'] = get_pattern_return(dat_slice, hs) 
+    #     ihs_df.loc[i, 'stop_return'] = get_pattern_return(dat_slice, hs) 
     
-    plot_hs(data, hs_patterns[-1], pad=0)
+    # plot_hs(data, hs_patterns[-1], pad=0)
 
 
