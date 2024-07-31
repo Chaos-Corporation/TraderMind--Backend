@@ -89,25 +89,28 @@ async def test_trading_pattern(request: CandlestickRequest):
                 print(pattern_function)
                 pattern_df = pattern_function(candles_df)
             
-                detected_patterns = pattern_df[pattern_df[target] == True][['T', target]].tail()
+                detected_patterns = pattern_df[pattern_df[target] == True][['T', target]]
                 print(detected_patterns)
-                last_10_patterns = detected_patterns.tail(10)
+                last_20_patterns = detected_patterns.tail(20)
 
-                return last_10_patterns.to_dict(orient='records')
+                return last_20_patterns.to_dict(orient='records')
             else:
                 return {"error": f"No candlestick pattern detection function found for {target}"}
         elif pattern_type == 'chart':
             candles_df = candles_df.set_index('T')
             log_data = np.log(candles_df['close'].to_numpy())
-            # Finding patterns
+
+
             hs_patterns, ihs_patterns = find_hs_patterns(log_data, 6, early_find=False)
-            print(hs_patterns,ihs_patterns)
-            hs_info = [extract_hs_pattern_info(pat, candles_df) for pat in hs_patterns]
-            ihs_info = [extract_hs_pattern_info(pat, candles_df) for pat in ihs_patterns]
-
-            print(hs_info,ihs_info)
-
-            return hs_info,ihs_info
+            if target == 'inverseHeadAndShoulders':
+                ihs_info = [extract_hs_pattern_info(pat, candles_df) for pat in ihs_patterns]
+                return ihs_info
+            elif target == 'headAndShoulders':
+                hs_info = [extract_hs_pattern_info(pat, candles_df) for pat in hs_patterns]
+                return hs_info
+            else:
+                return {"error": "Unsupported chart pattern target type specified"}
+        
 
 
         else:
