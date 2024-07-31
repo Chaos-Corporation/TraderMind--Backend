@@ -1,7 +1,6 @@
 import requests
 import pandas as pd
 from fastapi import APIRouter, Depends, status, HTTPException, Query
-from tradingpatterns import tradingpatterns
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
@@ -74,7 +73,6 @@ async def test_trading_pattern(request: CandlestickRequest):
         })
         candles_data = response.json()
 
-
         # Convert data to DataFrame
         candles_df = pd.DataFrame(candles_data, columns=['T', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'])
         # print(candles_df.shape,candles_df)
@@ -110,9 +108,6 @@ async def test_trading_pattern(request: CandlestickRequest):
                 return hs_info
             else:
                 return {"error": "Unsupported chart pattern target type specified"}
-        
-
-
         else:
             return {"error": "Unsupported pattern type specified"}
 
